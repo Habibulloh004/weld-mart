@@ -27,7 +27,7 @@ import { getData } from "@/actions/get";
 import { deleteData } from "@/actions/delete";
 import { Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { truncateText } from "@/lib/utils";
+import { fixImageUrl, truncateText } from "@/lib/utils";
 import Pagination from "../_components/Pagination";
 
 const filterItems = (items, searchTerm) => {
@@ -213,7 +213,7 @@ export default function News() {
               <TableCell>{truncateText(item.text, 100)}</TableCell>
               <TableCell>
                 <Image
-                  src={item.image}
+                  src={fixImageUrl(item.image)}
                   alt={`News ${item.id}`}
                   width={50}
                   height={50}

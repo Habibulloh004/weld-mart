@@ -1,6 +1,7 @@
 "use client";
 
 import { Marquee } from "@/components/magicui/marquee";
+import { fixImageUrl } from "@/lib/utils";
 import Image from "next/image";
 
 export default function Partners({ partners }) {
@@ -14,7 +15,7 @@ export default function Partners({ partners }) {
         {partnersData?.map((card, index) => (
           <div key={index} className="relative w-full h-full border rounded-xl p-2">
             <Image
-              src={card?.image}
+              src={fixImageUrl(card?.image)}
               alt="image"
               width={100}
               height={100}

@@ -1,7 +1,7 @@
 "use client";
 
 import { Marquee } from "@/components/magicui/marquee";
-import { infinityCards } from "@/lib/utils";
+import { fixImageUrl, infinityCards } from "@/lib/utils";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
@@ -17,7 +17,7 @@ export default function InfinityCards({ brands }) {
           className="relative w-full h-full border rounded-xl p-2"
         >
           <Image
-            src={card?.image}
+            src={fixImageUrl(card?.image)}
             alt="image"
             loading="eager"
             width={100}

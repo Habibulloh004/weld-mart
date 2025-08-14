@@ -28,6 +28,7 @@ import { deleteData } from "@/actions/delete";
 import { Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import Pagination from "../_components/Pagination";
+import { fixImageUrl } from "@/lib/utils";
 
 const filterItems = (items, searchTerm) => {
   if (!searchTerm) return items;
@@ -214,7 +215,7 @@ export default function Categories() {
               <TableCell>{category.name}</TableCell>
               <TableCell>
                 <Image
-                  src={category.image}
+                  src={fixImageUrl(category.image)}
                   alt={category.name}
                   width={50}
                   height={50}

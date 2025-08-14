@@ -27,7 +27,7 @@ import { getData } from "@/actions/get";
 import { Loader2, Trash2 } from "lucide-react";
 import { deleteData } from "@/actions/delete";
 import { toast } from "sonner";
-import { truncateText } from "@/lib/utils";
+import { fixImageUrl, truncateText } from "@/lib/utils";
 import Pagination from "../_components/Pagination";
 import { Switch } from "@/components/ui/switch";
 import { putData } from "@/actions/put";
@@ -270,7 +270,7 @@ export default function Products() {
               <TableCell>{truncateText(product.description, 100)}</TableCell>
               <TableCell>
                 <Image
-                  src={product.images[0]}
+                  src={fixImageUrl(product.images[0])}
                   alt={product.name}
                   width={50}
                   height={50}

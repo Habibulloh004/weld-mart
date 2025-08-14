@@ -8,7 +8,7 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "@/components/ui/accordion";
-import { cn, socialMedias, truncateText } from "@/lib/utils";
+import { cn, fixImageUrl, socialMedias, truncateText } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
@@ -189,7 +189,7 @@ export default function Sidebar({
                         >
                           <div className="flex items-center gap-1">
                             <Image
-                              src={category.image}
+                              src={fixImageUrl(category.image)}
                               width={50}
                               loading="eager"
                               height={50}
@@ -214,7 +214,7 @@ export default function Sidebar({
                                   )}
                                 >
                                   <Image
-                                    src={subCategory?.image}
+                                    src={fixImageUrl(subCategory?.image)}
                                     width={50}
                                     loading="eager"
                                     height={50}
@@ -261,7 +261,7 @@ export default function Sidebar({
                     >
                       <Image
                         loading="eager"
-                        src={brand.image}
+                        src={fixImageUrl(brand.image)}
                         width={50}
                         height={50}
                         alt={brand.name}

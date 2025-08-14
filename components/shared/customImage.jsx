@@ -12,12 +12,22 @@ const CustomImage = ({
   property,
 }) => {
   const [loading, setLoading] = useState(true);
+  
+  // URL ni tekshirish va almashtirish
+  const getModifiedSrc = (originalSrc) => {
+    if (!originalSrc) return originalSrc;
+    
+    // Agar src da "https://weldmarket.uz" bo'lsa, uni "https://weldmart.uz" ga almashtirish
+    return originalSrc.replace(/https:\/\/weldmarket\.uz/g, "https://weldmart.uz");
+  };
+
+  const modifiedSrc = getModifiedSrc(src);
 
   return (
     <div className="relative w-full h-full">
       {loading && <Skeleton className="absolute inset-0 h-full w-full" />}
       <Image
-        src={src}
+        src={modifiedSrc}
         alt={alt}
         layout="fill"
         loading={loadingImg ? loadingImg : "lazy"}

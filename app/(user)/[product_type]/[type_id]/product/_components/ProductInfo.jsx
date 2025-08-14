@@ -2,7 +2,7 @@
 
 import CustomImage from "@/components/shared/customImage";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn, fixImageUrl } from "@/lib/utils";
 import { useProductStore } from "@/store";
 import { Minus, Phone, Plus, Star, X } from "lucide-react";
 import React, { useState, useEffect } from "react";
@@ -180,7 +180,7 @@ export default function ProductInfo({ productData }) {
                   <Image
                     width={1200}
                     height={800}
-                    src={mainImage?.image || "/product.svg"}
+                    src={fixImageUrl(mainImage?.image) || "/product.svg"}
                     alt={`${name} - Увеличенное изображение`}
                     className="w-full h-full object-contain transition-transform duration-300 ease-in-out"
                     style={{

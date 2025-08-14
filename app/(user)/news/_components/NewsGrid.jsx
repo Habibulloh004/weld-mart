@@ -12,6 +12,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import Image from "next/image";
+import { fixImageUrl } from "@/lib/utils";
 
 export default function NewsGrid({ newsItems }) {
   return (
@@ -35,7 +36,7 @@ export default function NewsGrid({ newsItems }) {
             <div className="space-y-4">
               <div className="relative w-full h-64">
                 <Image
-                  src={item.image}
+                  src={fixImageUrl(item.image)}
                   alt="изображение новости"
                   fill
                   className="object-cover rounded-md"

@@ -28,6 +28,7 @@ import { deleteData } from "@/actions/delete";
 import { Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import Pagination from "../_components/Pagination";
+import { fixImageUrl } from "@/lib/utils";
 
 const filterItems = (items, searchTerm) => {
   if (!searchTerm) return items;
@@ -213,7 +214,7 @@ export default function Clients() {
               <TableCell>{client.id}</TableCell>
               <TableCell>
                 <Image
-                  src={client.image}
+                  src={fixImageUrl(client.image)}
                   alt={`Клиент ${client.id}`}
                   width={50}
                   height={50}

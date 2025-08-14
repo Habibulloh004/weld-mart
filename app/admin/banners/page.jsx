@@ -28,6 +28,7 @@ import { deleteData } from "@/actions/delete";
 import { Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import Pagination from "../_components/Pagination";
+import { fixImageUrl } from "@/lib/utils";
 
 // General filter function with a single search term
 const filterItems = (items, searchTerm) => {
@@ -221,7 +222,7 @@ export default function Banner() {
               <TableCell>{banner.url}</TableCell>
               <TableCell>
                 <Image
-                  src={banner.image}
+                  src={fixImageUrl(banner.image)}
                   alt={`Banner ${banner.id}`}
                   width={50}
                   height={50}

@@ -12,6 +12,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import BreadcrumbComponent from "@/components/shared/BreadcrumbComponent";
+import { fixImageUrl } from "@/lib/utils";
 
 export default async function OrderPage({ params }) {
   const orderId = params?.order;
@@ -174,7 +175,7 @@ export default async function OrderPage({ params }) {
                   <TableRow key={idx}>
                     <TableCell>
                       <Image
-                        src={productImage}
+                        src={fixImageUrl(productImage)}
                         alt={item?.name || `Товар #${item.product_id}`}
                         width={64}
                         height={64}

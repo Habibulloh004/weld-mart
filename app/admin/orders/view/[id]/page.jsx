@@ -18,7 +18,7 @@ import { Loader2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
 import { useAdminSocket } from "@/context/AdmnSocketContext";
-import { roundToTwoDecimals } from "@/lib/utils";
+import { fixImageUrl, roundToTwoDecimals } from "@/lib/utils";
 
 export default function ViewOrder() {
   const router = useRouter();
@@ -289,7 +289,7 @@ export default function ViewOrder() {
                   <TableRow key={idx}>
                     <TableCell>
                       <Image
-                        src={productImage}
+                        src={fixImageUrl(productImage)}
                         alt={productName}
                         width={64}
                         height={64}
