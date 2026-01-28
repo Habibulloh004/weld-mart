@@ -20,7 +20,7 @@ import { getData } from "@/actions/get";
 import { Loader2, CloudUpload, X } from "lucide-react";
 import { FileUploader, FileInput } from "@/components/ui/file-uploader";
 import { useRouter } from "next/navigation";
-import { backUrl } from "@/lib/utils";
+import { backUrl, fixImageUrl, isHttpUrl, isUploadPath } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { postData } from "@/actions/post";
 import { putData } from "@/actions/put";
@@ -43,8 +43,8 @@ const formSchema = z.object({
   description: z.string().min(1, "Описание обязательно"),
   image: z
     .string()
-    .url("Неверный формат URL")
-    .min(1, "Изображение обязательно"),
+    .min(1, "Изображение обязательно")
+    .refine((value) => isHttpUrl(value) || isUploadPath(value), "Неверный формат URL"),
   category_id: z.string().min(1, "ID категории обязателен"),
 });
 
@@ -139,7 +139,7 @@ export default function BottomCategoryEvent({ params }) {
       throw new Error(`Image upload failed! status: ${response.status}`);
     }
     const result = await response.json();
-    return `${backUrl}${result.path}`;
+    return result.path;
   };
 
   const handleFileUpload = async (newFiles) => {
@@ -182,8 +182,6 @@ export default function BottomCategoryEvent({ params }) {
   async function onSubmit(values) {
     try {
       setSubmitLoading(true);
-      console.log(values);
-
       let result;
       if (isAddMode) {
         result = await postData(
@@ -404,7 +402,7 @@ export default function BottomCategoryEvent({ params }) {
                       {imagePreview && (
                         <div className="relative w-24 h-24">
                           <img
-                            src={imagePreview.preview}
+                            src={fixImageUrl(imagePreview.preview)}
                             alt="Предпросмотр"
                             className="w-full h-full object-cover rounded-md"
                           />

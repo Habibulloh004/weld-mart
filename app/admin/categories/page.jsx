@@ -63,7 +63,6 @@ export default function Categories() {
         const response = await getData("/api/categories", "category");
         setCategories(response.categories || []);
       } catch (error) {
-        console.log(error);
         toast.error("Ошибка при загрузке категорий");
       } finally {
         setIsLoading(false);

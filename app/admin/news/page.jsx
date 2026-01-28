@@ -63,7 +63,6 @@ export default function News() {
         const response = await getData("/api/news", "new");
         setNews(response || []);
       } catch (error) {
-        console.log(error);
         toast.error("Ошибка при загрузке новостей");
       } finally {
         setIsLoading(false);

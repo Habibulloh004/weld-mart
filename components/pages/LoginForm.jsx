@@ -38,7 +38,7 @@ export default function LoginForm() {
         router.push("/");
       }
     } catch (error) {
-      console.log(error);
+      toast.error("Ошибка при входе в систему");
     } finally {
       setIsLoading(false);
     }

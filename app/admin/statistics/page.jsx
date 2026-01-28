@@ -29,8 +29,6 @@ export default function Statistics() {
         setIsLoading(true);
         const data = await getData("/api/statistics", "statistics");
         if (data) {
-          console.log(data);
-
           setStatistics({
             products: data.products || "0",
             partners: data.partners || "0",

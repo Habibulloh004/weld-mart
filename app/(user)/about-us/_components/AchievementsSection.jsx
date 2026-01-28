@@ -11,8 +11,6 @@ import {
 import CustomImage from "@/components/shared/customImage";
 
 export default function AchievementsSection({ achievements }) {
-  console.log(achievements);
-
   if (achievements.length === 0) return null;
 
   return (

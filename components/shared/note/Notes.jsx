@@ -1,10 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
+import DOMPurify from "dompurify";
+
 const Notes = () => {
   const [data, setData] = useState([]);
   const colors = ["#ffcccc", "#ccffcc", "#ccccff", "#ffffcc", "#ffccff"];
+
   useEffect(() => {
     const existingDataString = localStorage.getItem("myData");
     if (existingDataString) {
@@ -13,11 +16,19 @@ const Notes = () => {
     }
   }, []);
 
+  const sanitizedData = useMemo(() => {
+    if (typeof window === "undefined") return data;
+    return data.map(item => ({
+      ...item,
+      content: DOMPurify.sanitize(item.content || "")
+    }));
+  }, [data]);
+
   return (
     <div className="max-w-6xl mx-auto px-5">
       <ResponsiveMasonry columnsCountBreakPoints={{ 0: 1, 750: 2, 1024: 3 }}>
         <Masonry gutter="20px">
-          {data.map((item, idx) => (
+          {sanitizedData.map((item, idx) => (
             <div key={idx} style={{ color: colors[idx % colors.length] }}>
               <div
                 className="px-4 py-3 font-bold text-slate-950"

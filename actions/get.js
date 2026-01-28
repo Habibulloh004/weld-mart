@@ -1,18 +1,34 @@
-"use server";
-
 import { backUrl } from "@/lib/utils";
 
-export async function getData(endpoint, tag, revalidate) {
-  const url = `${backUrl}${endpoint}`;
-  try {
-    const response = await fetch(url, {
-      method: "GET",
-      next: { tags: [`${tag}`], revalidate: 86400 }, // 1 kun cache
-      redirect: "follow",
-    });
+const normalizeTags = (tag) => {
+  if (!tag) return undefined;
+  const tags = Array.isArray(tag) ? tag : [tag];
+  const normalized = tags
+    .map((value) => String(value).trim())
+    .filter(Boolean);
+  return normalized.length ? normalized : undefined;
+};
 
-    if (!response.ok)
+export async function getData(endpoint, tag) {
+  const url = `${backUrl}${endpoint}`;
+  const isServer = typeof window === "undefined";
+  const tags = normalizeTags(tag);
+  try {
+    const response = await fetch(
+      url,
+      isServer
+        ? {
+            method: "GET",
+            cache: "force-cache",
+            ...(tags ? { next: { tags } } : {}),
+            redirect: "follow",
+          }
+        : { method: "GET", redirect: "follow" }
+    );
+
+    if (!response.ok) {
       throw new Error(`Error: ${response.status} - ${response.statusText}`);
+    }
 
     return await response?.json();
   } catch (error) {

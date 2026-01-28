@@ -48,11 +48,7 @@ export default function ViewOrder() {
         // Если статус заказа "new", изменяем его на "created"
         if (orderData.status === "new") {
           const updatedOrder = { ...orderData, status: "created" };
-          console.log(updatedOrder);
-
-          const res = await putData(updatedOrder, `/api/orders/${id}`, "order");
-          console.log(res);
-
+          await putData(updatedOrder, `/api/orders/${id}`, "order");
           setOrder(updatedOrder);
           reloadFunc();
         }

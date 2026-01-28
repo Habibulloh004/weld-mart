@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox"; // Added Checkbox import
@@ -61,21 +61,30 @@ export default function Products() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [showPrice, setShowPrice] = useState(false);
+  const isInitializedRef = useRef(false);
 
   useEffect(() => {
-    const fetchData = async () => {
+    if (isInitializedRef.current) return;
+    isInitializedRef.current = true;
+
+    const fetchAllData = async () => {
       setIsLoading(true);
       try {
-        const response = await getData(`/api/products`, "product");
-        setProducts(response.products || []);
+        const [productsResponse, priceSwitch] = await Promise.all([
+          getData(`/api/products`, "product"),
+          getData(`/api/price-switch`, "price-switch"),
+        ]);
+        setProducts(productsResponse?.products || []);
+        if (priceSwitch) {
+          setShowPrice(Boolean(priceSwitch?.show));
+        }
       } catch (error) {
-        console.log(error);
         toast.error("Ошибка при загрузке товаров");
       } finally {
         setIsLoading(false);
       }
     };
-    fetchData();
+    fetchAllData();
   }, []);
 
   const itemsPerPage = 10;
@@ -98,29 +107,13 @@ export default function Products() {
         `/api/price-switch`,
         "price-switch"
       );
-      console.log(show);
       if (show?.data) {
         setShowPrice(bool);
       }
     } catch (error) {
-      console.log(error);
+      // Handle error silently
     }
   };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const show = await getData(`/api/price-switch`,"price-switch");
-        if(show){
-          setShowPrice(Boolean(show?.show))
-        }
-        console.log(show);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    fetchData();
-  }, []);
 
   const handleConfirmDelete = async () => {
     if (!productsToDelete.length) return;

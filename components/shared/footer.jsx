@@ -41,14 +41,12 @@ export default function Footer() {
         rassilkaData.user_id = auth.id;
       }
       const res = await postData(rassilkaData, "/api/rassikas", "rassilka");
-      console.log(res);
 
       if (res) {
         toast.success("E-mail успешно отправлен!");
         setEmail("");
       }
     } catch (error) {
-      console.log(error);
       toast.error("Ошибка при отправке");
     } finally {
       setIsLoading(false);

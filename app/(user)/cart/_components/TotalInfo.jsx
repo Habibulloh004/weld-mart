@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { useOrderStore, useProductStore } from "@/store";
@@ -87,6 +87,9 @@ export default function TotalInfo() {
   const deliveryPrice = 50000;
   const maxBonus = auth?.bonus || 0;
   const wsRef = useRef(null);
+  const reconnectTimeoutRef = useRef(null);
+  const reconnectAttemptsRef = useRef(0);
+  const isUnmountingRef = useRef(false);
 
   const individualForm = useForm({
     resolver: zodResolver(individualSchema(maxBonus)),
@@ -111,39 +114,86 @@ export default function TotalInfo() {
   });
 
   useEffect(() => {
-    const ws = new WebSocket(wsUrl);
-    wsRef.current = ws;
+    const maxReconnectAttempts = 10;
+    const baseReconnectDelay = 1000;
 
-    ws.onopen = () => console.log("WebSocket подключен");
-    ws.onclose = () => console.log("WebSocket отключен");
-    ws.onmessage = (event) =>
-      console.log("Получено сообщение WebSocket:", event.data);
+    const scheduleReconnect = () => {
+      if (isUnmountingRef.current) return;
+
+      if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
+        console.warn("Максимальное количество попыток переподключения WebSocket достигнуто");
+        return;
+      }
+
+      const delay = Math.min(
+        baseReconnectDelay * Math.pow(2, reconnectAttemptsRef.current),
+        30000
+      );
+      reconnectAttemptsRef.current += 1;
+
+
+      reconnectTimeoutRef.current = setTimeout(() => {
+        if (!isUnmountingRef.current) {
+          connect();
+        }
+      }, delay);
+    };
+
+    const connect = () => {
+      if (isUnmountingRef.current) return;
+
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+
+      const ws = new WebSocket(wsUrl);
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        reconnectAttemptsRef.current = 0;
+      };
+      ws.onclose = (event) => {
+        wsRef.current = null;
+        if (event.code !== 1000 && !isUnmountingRef.current) {
+          scheduleReconnect();
+        }
+      };
+      ws.onerror = () => {};
+      ws.onmessage = () => {};
+    };
+
+    isUnmountingRef.current = false;
+    connect();
 
     return () => {
-      ws.close();
+      isUnmountingRef.current = true;
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+      }
+      if (wsRef.current) {
+        wsRef.current.close(1000, "Component unmounting");
+      }
     };
   }, []);
 
-  const calculateProductTotal = (product) => {
+  const calculateProductTotal = useCallback((product) => {
     if (!product || !product.price || !product.count) return 0;
     let productPrice =
       product?.discount > 0
         ? product.price * (1 - product.discount / 100)
         : product.price;
     return roundToTwoDecimals(productPrice * product.count);
-  };
+  }, []);
 
   useEffect(() => {
-    const calculateTotals = async () => {
-      let totalSum = 0;
-      products.forEach((product) => {
-        const productTotal = calculateProductTotal(product);
-        totalSum += productTotal;
-      });
-      setTotalSum(roundToTwoDecimals(totalSum));
-    };
-    calculateTotals();
-  }, [products]);
+    let totalSum = 0;
+    products.forEach((product) => {
+      const productTotal = calculateProductTotal(product);
+      totalSum += productTotal;
+    });
+    setTotalSum(roundToTwoDecimals(totalSum));
+  }, [products, calculateProductTotal, setTotalSum]);
 
   const sendToWebSocket = (data) => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
@@ -159,9 +209,6 @@ export default function TotalInfo() {
       } else {
         wsRef.current.send(JSON.stringify({ message: data }));
       }
-      console.log("Отправлено в WebSocket:", { message: data });
-    } else {
-      console.error("WebSocket не подключен");
     }
   };
 
@@ -188,15 +235,11 @@ export default function TotalInfo() {
     } else {
       indivData = { ...indivData, user_id: 0 };
     }
-    console.log(indivData);
-
     try {
       const res = await postData(indivData, "/api/individual-orders", "order");
       if (res.id || res.error?.includes("created")) {
         if (auth?.phone) {
           let userBonus = (+auth?.bonus || 0) + (totalSum * 5) / 100;
-          console.log(roundToTwoDecimals(userBonus));
-
           setAuth({
             ...auth,
             bonus: roundToTwoDecimals(userBonus),
@@ -260,15 +303,11 @@ export default function TotalInfo() {
     } else {
       legalData = { ...legalData, user_id: 0 };
     }
-    console.log(legalData);
-
     try {
       const res = await postData(legalData, "/api/legal-orders", "order");
       if (res.id || res.error?.includes("created")) {
         if (auth?.phone) {
           let userBonus = (+auth?.bonus || 0) + (totalSum * 5) / 100;
-          console.log(roundToTwoDecimals(userBonus));
-
           setAuth({
             ...auth,
             bonus: roundToTwoDecimals(userBonus),

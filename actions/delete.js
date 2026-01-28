@@ -1,8 +1,15 @@
-"use server";
+import { backUrl } from "@/lib/utils";
+import { triggerRevalidate } from "@/actions/revalidate";
 
-import { backUrl, baseUrl } from "@/lib/utils";
+const normalizeList = (value) => {
+  if (!value) return [];
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item).trim()).filter(Boolean);
+  }
+  return [String(value).trim()].filter(Boolean);
+};
 
-export async function deleteData(endpoint, tag) {
+export async function deleteData(endpoint, tag, revalidate) {
   const url = `${backUrl}${endpoint}`;
 
   try {
@@ -10,16 +17,21 @@ export async function deleteData(endpoint, tag) {
       method: "DELETE",
       redirect: "follow",
     });
-    await fetch(`${process.env.NEXT_PUBLIC_URL}/api/revalidate`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ tag }), // Send tag in body
-    });
     const result = await response.json();
-    console.log(result);
-    
+
+    if (response.ok && !result?.error) {
+      const baseTags = normalizeList(tag);
+      let paths = [];
+      if (typeof revalidate === "string" || Array.isArray(revalidate)) {
+        paths = normalizeList(revalidate);
+      } else if (revalidate?.paths || revalidate?.tags) {
+        paths = normalizeList(revalidate.paths);
+        baseTags.push(...normalizeList(revalidate.tags));
+      }
+
+      await triggerRevalidate({ tags: baseTags, paths });
+    }
+
     if (result.error) {
       return result;
     } else {

@@ -110,8 +110,6 @@ export default function MailingListEvent({ params }) {
   );
 
   async function onSubmit(values) {
-    console.log({ values });
-
     try {
       setSubmitLoading(true);
       let data = {

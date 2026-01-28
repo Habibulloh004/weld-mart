@@ -57,14 +57,12 @@ export default function RegisterForm() {
       if (response.error) {
         return toast.error(response.error);
       } else if (response?.phone) {
-        console.log(response);
-
         login(response);
         toast.success("Вы зарегистрированы!");
         form.reset();
       }
     } catch (error) {
-      console.log(error);
+      toast.error("Ошибка при регистрации");
     } finally {
       setIsLoading(false);
     }

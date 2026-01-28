@@ -61,10 +61,7 @@ export default function Clients() {
         setIsLoading(true);
         const response = await getData("/api/clients", "client");
         setClients(response || []);
-        console.log(response);
-        
       } catch (error) {
-        console.log(error);
         toast.error("Ошибка при загрузке клиентов");
       } finally {
         setIsLoading(false);

@@ -64,7 +64,6 @@ export default function Brands() {
         const response = await getData("/api/brands", "brand");
         setBrands(response.brands || []);
       } catch (error) {
-        console.log(error);
         toast.error("Ошибка при загрузке брендов");
       } finally {
         setIsLoading(false);

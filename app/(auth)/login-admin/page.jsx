@@ -1,30 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
-import { getData } from "@/actions/get";
 
 export default function LoginAdmin() {
   const router = useRouter();
   const [form, setForm] = useState({ login: "", password: "" });
-  const [adminData, setAdminData] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
-  // Admin ma'lumotlarini API'dan olish
-  useEffect(() => {
-    const fetchAdminData = async () => {
-      try {
-        const response = await getData("/api/admin", "admin");
-        setAdminData(response);
-      } catch (err) {
-        setError("Admin ma'lumotlarini yuklashda xatolik!");
-      }
-    };
-
-    fetchAdminData();
-  }, []);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -33,30 +17,35 @@ export default function LoginAdmin() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
-    // Ma'lumotlar hali yuklanmagan bo'lsa, loginni rad etish
-    if (!adminData) {
-      setError("Ma'lumotlar hali yuklanmagan. Iltimos, biroz kuting.");
-      return;
-    }
-
-    // Login va parolni tekshirish
-    if (
-      form.login === adminData.login &&
-      form.password === adminData.password
-    ) {
-      // Tokenni cookie-ga yozish
-      Cookies.set("adminAuth", JSON.stringify(adminData), {
-        expires: 3, // 3 kun
-        path: "/",
+    try {
+      // Server-side authentication - credentials never exposed to client
+      const response = await fetch("/api/auth/admin-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
       });
 
-      router.push("/admin");
-    } else {
-      setError("Login yoki parol noto‘g‘ri!");
-    }
+      const data = await response.json();
 
-    setLoading(false);
+      if (data.success) {
+        // Store only session data (no password)
+        Cookies.set("adminAuth", JSON.stringify(data.admin), {
+          expires: 3,
+          path: "/",
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "Strict"
+        });
+        router.push("/admin");
+      } else {
+        setError(data.message || "Login yoki parol noto'g'ri!");
+      }
+    } catch (err) {
+      setError("Server bilan bog'lanishda xatolik!");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

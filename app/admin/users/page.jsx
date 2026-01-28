@@ -62,7 +62,6 @@ export default function Users() {
         const response = await getData("/api/users", "user");
         setUsers(response || []);
       } catch (error) {
-        console.log(error);
         toast.error("Ошибка при загрузке пользователей");
       } finally {
         setIsLoading(false);

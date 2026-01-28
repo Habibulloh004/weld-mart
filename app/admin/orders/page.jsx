@@ -34,6 +34,7 @@ import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Pagination from "../_components/Pagination"; // Added Pagination component
+import { useAdminSocket } from "@/context/AdmnSocketContext";
 
 // General filter function with a single search term
 const filterItems = (items, searchTerm) => {
@@ -59,6 +60,7 @@ const filterItems = (items, searchTerm) => {
 
 export default function Orders() {
   const router = useRouter();
+  const { newOrders, reload } = useAdminSocket();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [ordersToDelete, setOrdersToDelete] = useState([]); // Changed to array for multi-delete
   const [currentPage, setCurrentPage] = useState(1);
@@ -74,14 +76,13 @@ export default function Orders() {
         const response = await getData("/api/orders", "order");
         setOrders(response || []);
       } catch (error) {
-        console.log(error);
         toast.error("Ошибка при загрузке заказов");
       } finally {
         setIsLoading(false);
       }
     };
     fetchData();
-  }, []);
+  }, [newOrders, reload]);
 
   const itemsPerPage = 10;
 

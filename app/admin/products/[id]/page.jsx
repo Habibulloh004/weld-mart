@@ -32,7 +32,7 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from "@/components/ui/popover";
-import { backUrl } from "@/lib/utils";
+import { backUrl, fixImageUrl, isHttpUrl, isUploadPath } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import SubmitButton from "@/components/shared/submitButton";
@@ -41,13 +41,18 @@ import { postData } from "@/actions/post";
 import { putData } from "@/actions/put";
 import Todo from "@/components/shared/note/NotePicker";
 
+const imageValueSchema = z
+  .string()
+  .min(1, "Неверный формат URL")
+  .refine((value) => isHttpUrl(value) || isUploadPath(value), "Неверный формат URL");
+
 const formSchema = z.object({
   name: z.string().min(1, "Название обязательно"),
   rating: z.number().min(0).max(5, "Рейтинг должен быть от 0 до 5"),
   quantity: z.number().min(0, "Количество не может быть отрицательным"),
   description: z.string().min(1, "Описание обязательно"),
   images: z
-    .array(z.string().url("Неверный формат URL"))
+    .array(imageValueSchema)
     .min(1, "Требуется хотя бы одно изображение")
     .max(3, "Максимум 3 изображения"),
   price: z.number().min(0, "Цена не может быть отрицательной"),
@@ -168,24 +173,21 @@ export default function ProductEvent({ params }) {
     fetchProduct();
   }, [id, isAddMode, form]);
 
+  // Watch category_id for filtering bottom categories
+  const watchedCategoryId = form.watch("category_id");
+
   // Filter BottomCategories when Category changes
   useEffect(() => {
-    const categoryId = form.getValues("category_id");
-    if (categoryId) {
+    if (watchedCategoryId) {
       const filtered = allBottomCategories.filter(
-        (bc) => String(bc.category_id) == categoryId
+        (bc) => String(bc.category_id) == watchedCategoryId
       );
       setFilteredBottomCategories(filtered);
-      // Reset bottom_category_id if it's not in the filtered list
-      const currentBottomId = form.getValues("bottom_category_id");
-      if (currentBottomId) {
-        form.setValue("bottom_category_id", currentBottomId);
-      }
     } else {
       setFilteredBottomCategories([]);
       form.setValue("bottom_category_id", "");
     }
-  }, [form.watch("category_id"), allBottomCategories]);
+  }, [watchedCategoryId, allBottomCategories, form]);
 
   const uploadImage = async (file) => {
     const formdata = new FormData();
@@ -201,7 +203,7 @@ export default function ProductEvent({ params }) {
       throw new Error(`Image upload failed! status: ${response.status}`);
     }
     const result = await response.json();
-    return `${backUrl}${result.path}`;
+    return result.path;
   };
 
   const handleFilesChange = async (newFiles) => {
@@ -273,7 +275,6 @@ export default function ProductEvent({ params }) {
       } else {
         result = await putData(data, `/api/products/${id}`, "product");
       }
-      console.log(result);
 
       if (result && !result.error) {
         if (isAddMode) {
@@ -365,11 +366,17 @@ export default function ProductEvent({ params }) {
                   <FormControl>
                     <Input
                       type="number"
+                      min="0"
                       placeholder="Введите количество продукта"
-                      {...field}
-                      onChange={(e) =>
-                        field.onChange(parseInt(e.target.value) || 0)
-                      }
+                      value={field.value === "" ? "" : field.value}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        field.onChange(val === "" ? "" : parseInt(val, 10) || 0);
+                      }}
+                      onBlur={(e) => {
+                        field.onChange(parseInt(e.target.value, 10) || 0);
+                        field.onBlur();
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
@@ -386,12 +393,18 @@ export default function ProductEvent({ params }) {
                   <FormControl>
                     <Input
                       type="number"
+                      min="0"
                       placeholder="Введите цену"
                       step="0.01"
-                      {...field}
-                      onChange={(e) =>
-                        field.onChange(parseFloat(e.target.value) || 0)
-                      }
+                      value={field.value === "" ? "" : field.value}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        field.onChange(val === "" ? "" : parseFloat(val) || 0);
+                      }}
+                      onBlur={(e) => {
+                        field.onChange(parseFloat(e.target.value) || 0);
+                        field.onBlur();
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
@@ -454,7 +467,7 @@ export default function ProductEvent({ params }) {
                           {imagePreviews.map((image, index) => (
                             <div key={index} className="relative">
                               <img
-                                src={image.preview}
+                                src={fixImageUrl(image.preview)}
                                 alt={`Изображение ${index + 1}`}
                                 className="w-full h-24 object-cover rounded-md"
                               />

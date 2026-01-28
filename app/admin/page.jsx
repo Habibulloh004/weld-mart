@@ -116,7 +116,7 @@ export default function Dashboard() {
           monthlyOrders,
         });
       } catch (error) {
-        console.log(error);
+        // Handle error silently
       } finally {
         setIsLoading(false);
       }

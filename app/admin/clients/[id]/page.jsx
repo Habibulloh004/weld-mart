@@ -19,12 +19,15 @@ import { getData } from "@/actions/get";
 import { Loader2, CloudUpload, X } from "lucide-react";
 import { FileUploader, FileInput } from "@/components/ui/file-uploader";
 import { useRouter } from "next/navigation";
-import { backUrl } from "@/lib/utils";
+import { backUrl, fixImageUrl, isHttpUrl, isUploadPath } from "@/lib/utils";
 import { postData } from "@/actions/post";
 import { putData } from "@/actions/put";
 
 const formSchema = z.object({
-  image: z.string().url("Неверный формат URL").min(1, "Изображение обязательно"),
+  image: z
+    .string()
+    .min(1, "Изображение обязательно")
+    .refine((value) => isHttpUrl(value) || isUploadPath(value), "Неверный формат URL"),
 });
 
 export default function ClientEvent({ params }) {
@@ -93,7 +96,7 @@ export default function ClientEvent({ params }) {
       throw new Error(`Ошибка загрузки изображения! статус: ${response.status}`);
     }
     const result = await response.json();
-    return `${backUrl}${result.path}`;
+    return result.path;
   };
 
   const handleFileUpload = async (newFiles) => {
@@ -124,8 +127,6 @@ export default function ClientEvent({ params }) {
     try {
       setSubmitLoading(true);
       let result;
-      console.log(values);
-      
       if (isAddMode) {
         result = await postData(values, "/api/clients", "client");
       } else {
@@ -213,7 +214,7 @@ export default function ClientEvent({ params }) {
                       {imagePreview && (
                         <div className="relative w-24 h-24">
                           <img
-                            src={imagePreview.preview}
+                            src={fixImageUrl(imagePreview.preview)}
                             alt="Предпросмотр"
                             className="w-full h-full object-cover rounded-md"
                           />

@@ -1,6 +1,6 @@
 "use client";
 import emblaCarouselAutoplay from "embla-carousel-autoplay";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { ChevronDown, Star } from "lucide-react";
 import {
   Accordion,
@@ -60,31 +60,35 @@ export default function Sidebar({
   });
   const [defaultValue, setDefaultValue] = useState(getInitialDefaultValue);
 
-  // Randomly select 4 products with unique brand_ids
-  const featuredProducts = (() => {
-    if (allProducts?.length > 0) {
-      let productsCopy = [...allProducts];
-      productsCopy = productsCopy.filter((pr) => pr?.rating == 5);
-      const selectedProducts = [];
-      const usedBrandIds = new Set();
-
-      while (selectedProducts.length < 4 && productsCopy.length > 0) {
-        const randomIndex = Math.floor(Math.random() * productsCopy.length);
-        const product = productsCopy[randomIndex];
-
-        if (!usedBrandIds.has(product.brand_id)) {
-          selectedProducts.push(product);
-          usedBrandIds.add(product.brand_id);
-        }
-
-        productsCopy.splice(randomIndex, 1);
-      }
-
-      return selectedProducts;
-    } else {
+  const featuredProducts = useMemo(() => {
+    if (!Array.isArray(allProducts) || allProducts.length === 0) {
       return [];
     }
-  })();
+
+    const candidates = allProducts
+      .filter((product) => product?.rating === 5)
+      .slice()
+      .sort((a, b) => {
+        if (a?.brand_id !== b?.brand_id) {
+          return (a?.brand_id || 0) - (b?.brand_id || 0);
+        }
+        return (a?.id || 0) - (b?.id || 0);
+      });
+
+    const selected = [];
+    const usedBrandIds = new Set();
+    for (const product of candidates) {
+      if (selected.length >= 4) {
+        break;
+      }
+      if (!usedBrandIds.has(product.brand_id)) {
+        selected.push(product);
+        usedBrandIds.add(product.brand_id);
+      }
+    }
+
+    return selected;
+  }, [allProducts]);
 
   useEffect(() => {
     const isCategoryPage = pathname.startsWith("/category/");
@@ -410,9 +414,9 @@ export default function Sidebar({
 
       {socials && (
         <main>
-          <div className="w-full mx-auto flex justify-between px-4 sm:justify-end gap-4 items-end">
+          <div className="w-full flex justify-center gap-4 items-center py-4">
             {socialMedias?.map((social, idx) => (
-              <Link key={idx} target="_blank" href={social.url} className="">
+              <Link key={idx} target="_blank" href={social.url}>
                 <Image
                   width={100}
                   height={100}

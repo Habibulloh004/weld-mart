@@ -19,7 +19,7 @@ import { getData } from "@/actions/get";
 import { Loader2, CloudUpload, X } from "lucide-react";
 import { FileUploader, FileInput } from "@/components/ui/file-uploader";
 import { useRouter } from "next/navigation";
-import { backUrl } from "@/lib/utils";
+import { backUrl, fixImageUrl, isHttpUrl, isUploadPath } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { postData } from "@/actions/post";
 import { putData } from "@/actions/put";
@@ -27,7 +27,10 @@ import { Input } from "@/components/ui/input";
 
 const formSchema = z.object({
   text: z.string().min(1, "Требуется описание"),
-  image: z.string().url("Неверный формат URL").min(1, "Требуется изображение"),
+  image: z
+    .string()
+    .min(1, "Требуется изображение")
+    .refine((value) => isHttpUrl(value) || isUploadPath(value), "Неверный формат URL"),
 });
 
 export default function NewsEvent({ params }) {
@@ -99,7 +102,7 @@ export default function NewsEvent({ params }) {
       throw new Error(`Image upload failed! status: ${response.status}`);
     }
     const result = await response.json();
-    return `${backUrl}${result.path}`;
+    return result.path;
   };
 
   const handleFileUpload = async (newFiles) => {
@@ -261,7 +264,7 @@ export default function NewsEvent({ params }) {
                       {imagePreview && (
                         <div className="relative w-24 h-24">
                           <img
-                            src={imagePreview.preview}
+                            src={fixImageUrl(imagePreview.preview)}
                             alt="Предпросмотр"
                             className="w-full h-full object-cover rounded-md"
                           />

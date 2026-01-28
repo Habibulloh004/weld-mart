@@ -2,13 +2,23 @@
 
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import React from "react";
+import React, { useMemo } from "react";
 import CustomImage from "@/components/shared/customImage";
 
 export default function News({ news }) {
   if (!news || news.length === 0) return null;
 
-  const randomNews = news[Math.floor(Math.random() * news.length)];
+  const featuredNews = useMemo(() => {
+    if (!Array.isArray(news) || news.length === 0) {
+      return null;
+    }
+
+    return news
+      .slice()
+      .sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      )[0];
+  }, [news]);
 
   return (
     <main className="space-y-6 px-4 lg:px-0">
@@ -21,14 +31,14 @@ export default function News({ news }) {
       </section>
       <section className="flex flex-col gap-3 md:flex-row items-center bg-white p-6 shadow-md rounded-lg">
         <div className="md:w-1/2 w-full">
-          <h1 className="line-clamp-3 break-words text-left">{randomNews?.text}</h1>
+          <h1 className="line-clamp-3 break-words text-left">{featuredNews?.text}</h1>
         </div>
         <div className="md:w-1/2 w-full">
           <div className="relative aspect-[4/2]">
             <CustomImage
               loading="eager"
               alt="image"
-              src={randomNews.image}
+              src={featuredNews?.image}
               className="w-full h-full rounded-lg object-cover"
             />
           </div>

@@ -32,7 +32,6 @@ export default function Header({ categoriesData, brandsData }) {
   const { auth, showPrice } = useAuth(); // Получение auth из контекста
   const { products, initializeProducts } = useProductStore();
   const { initializeOrderData } = useOrderStore();
-  console.log(auth);
 
   const pathname = usePathname();
   const [open, setOpen] = useState(false);

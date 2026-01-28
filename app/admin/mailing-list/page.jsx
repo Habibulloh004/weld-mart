@@ -69,7 +69,6 @@ export default function MailingList() {
         const response = await getData("/api/rassikas", "rassilka");
         setMailingList(response || []);
       } catch (error) {
-        console.log(error);
         toast.error("Ошибка при загрузке списка рассылки");
       } finally {
         setIsLoading(false);
@@ -158,13 +157,6 @@ export default function MailingList() {
             message: emailDescription,
           }),
         }
-      );
-      console.log(
-        JSON.stringify({
-          emails,
-          subject: emailTitle,
-          message: emailDescription,
-        })
       );
       const hrassikas = await postData(
         { title: emailTitle, body: emailDescription },

@@ -58,8 +58,6 @@ export default function UserEvent({ params }) {
           const user = await getData(`/api/users/${userId}`, "user");
           if (user) {
             setOrders(user?.order);
-            console.log(user);
-
             form.reset({
               name: user?.name || "",
               phone: user?.phone || "",
@@ -99,16 +97,12 @@ export default function UserEvent({ params }) {
         delete updatedValues.password;
       }
 
-      console.log("Отправка:", updatedValues);
-
       let result;
       if (isAddMode) {
         result = await postData(updatedValues, "/api/users", "user");
       } else {
         result = await putData(updatedValues, `/api/users/${userId}`, "user");
       }
-      console.log(result);
-      console.log("Ответ API:", result);
 
       if (result && !result.error) {
         if (isAddMode) {

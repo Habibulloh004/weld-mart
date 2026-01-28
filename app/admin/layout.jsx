@@ -3,9 +3,10 @@ import Header from "./_components/Header";
 import Sidebar from "./_components/Sidebar";
 import { AdminSocketProvider } from "@/context/AdmnSocketContext";
 
-export default function AdminLayout({ children }) {
+export default async function AdminLayout({ children }) {
   let auth = null;
-  const authCookie = cookies().get("adminAuth");
+  const cookieStore = await cookies();
+  const authCookie = cookieStore.get("adminAuth");
 
   if (authCookie) {
     try {

@@ -113,8 +113,6 @@ export default function OrderEvent({ params }) {
 
         if (!isAddMode && id) {
           const order = await getData(`/api/orders/${id}`);
-          console.log("Fetched order:", order);
-
           form.reset({
             bonus: order?.bonus || 0,
             user_id: order?.user_id || 0,
@@ -141,8 +139,6 @@ export default function OrderEvent({ params }) {
   }, [id, isAddMode, form]);
 
   const calculateTotalPrice = () => {
-    console.log("this is work");
-
     const total = form.getValues().order_items.reduce((sum, item) => {
       const product = products.find((p) => p.id === item.product_id);
       const price = product?.price || 0;
@@ -173,8 +169,6 @@ export default function OrderEvent({ params }) {
         })),
       };
 
-      console.log("Submitting:", JSON.stringify(payload));
-
       let result;
       if (isAddMode) {
         result = await postData(
@@ -189,8 +183,6 @@ export default function OrderEvent({ params }) {
       } else {
         result = await putData(payload, `/api/orders/${id}`, "order");
       }
-
-      console.log("API response:", result);
 
       if (result && !result.error) {
         if (isAddMode) {

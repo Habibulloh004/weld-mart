@@ -64,11 +64,8 @@ export default function BottomCategory() {
           "/api/bottomCategories",
           "bottom-category"
         );
-        console.log(response);
-
         setBottomCategories(response.bottom_categories || []);
       } catch (error) {
-        console.log(error);
         toast.error("Ошибка при загрузке подкатегорий");
       } finally {
         setIsLoading(false);

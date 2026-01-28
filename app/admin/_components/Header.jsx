@@ -105,7 +105,7 @@ export default function Header({ authData }) {
             <Avatar>
               <AvatarImage src="https://github.com/shadcn.png" />
               <AvatarFallback>
-                {authData?.name.slice(0, 1)?.toUpperCase()}
+                {authData?.name?.slice(0, 1)?.toUpperCase()}
               </AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>

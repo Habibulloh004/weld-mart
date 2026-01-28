@@ -63,7 +63,6 @@ export default function Achievements() {
         const response = await getData("/api/achievements", "achievement");
         setAchievements(response || []);
       } catch (error) {
-        console.log(error);
         toast.error("Ошибка при загрузке достижений");
       } finally {
         setIsLoading(false);
